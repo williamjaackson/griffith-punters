@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Griffith Punters Club{% endblock %}</title>
+
+    {% block scripts %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='nomobile.js') }}"></script>
+    {% endblock %}
+
+    {% block styles %}
+    {% endblock %}
+
+</head>
+<body class="flex h-screen bg-slate-100">
+    <!-- overlay that says you cant use mobile -->
+    {% block body %}
+    <!-- Sidebar -->
+    <aside class="flex-shrink-0 bg-gray-800 text-white h-full">
+        <nav class="bg-gray-800 text-white h-full w-64">
+            <ul class="space-y-2 p-4">
+                <li><a href="/" class="block py-2 px-4 hover:bg-gray-700">Home</a></li>
+                <li><a href="/about" class="block py-2 px-4 hover:bg-gray-700">About</a></li>
+                <li><a href="/contact" class="block py-2 px-4 hover:bg-gray-700">Contact</a></li>
+            </ul>
+        </nav>
+    </aside>
+    {% endblock %}
+</body>
+</html>
