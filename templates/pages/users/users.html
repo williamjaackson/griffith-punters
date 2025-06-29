@@ -1,0 +1,12 @@
+{% extends "basepage.html" %}
+{% block title %}{{ super() }} - Users{% endblock %}
+
+{% block content %}
+<h1>Users</h1>
+{% for user in users %}
+<div class="bg-white shadow-md rounded-lg p-6 mb-4">
+    <h2 class="text-xl font-semibold mb-2">{{ user.username }}</h2>
+    <a href="{{ url_for('users.user', user=user._id) }}" class="text-blue-500 hover:underline">View Profile</a>
+</div>
+{% endfor %}
+{% endblock %}

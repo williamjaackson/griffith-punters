@@ -1,0 +1,26 @@
+{% extends "basepage.html" %}
+
+{% block title %}{{ super() }} - User {{ user.username }}{% endblock %}
+
+{% block content %}
+<h1>{{ user.username }}</h1>
+<p>{{ user._id }}</p>
+<!-- <hr>
+<p>Positions Value: #####</p>
+<p>Profit/Loss: #####</p>
+<p>Volume Traded: #####</p> -->
+<hr>
+<p>Account Balance: ${{ user.balance }}</p>
+<br>
+<p>Account Created: {{ user.created_at }}</p>
+<p>Last Login: {{ user.last_login }}</p>
+<hr>
+<h2>Recent Trades</h2>
+<ul>
+    {% for trade in user.trades %}
+        <li>{{ trade.market }} - {{ trade.amount }} at {{ trade.price }} on {{ trade.timestamp }}</li>
+    {% else %}
+        <li>No trades yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

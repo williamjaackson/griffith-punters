@@ -10,7 +10,7 @@ def markets():
     return flask.render_template('pages/markets/markets.html', markets=markets_collection.find())
 
 @blueprint.route('/<market>')
-def detail(market):
+def market(market):
     market_data = next((m for m in markets_collection.find() if str(m['_id']) == market), None)
     if not market_data: return flask.abort(404)
     return flask.render_template('pages/markets/market.html', market=market_data)
