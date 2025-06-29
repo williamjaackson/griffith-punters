@@ -14,19 +14,15 @@
     {% endblock %}
 
 </head>
-<body class="flex h-screen bg-slate-100">
+<body class="flex h-screen bg-slate-100 text-gray-900">
     <!-- overlay that says you cant use mobile -->
     {% block body %}
     <!-- Sidebar -->
-    <aside class="flex-shrink-0 bg-gray-800 text-white h-full">
-        <nav class="bg-gray-800 text-white h-full w-64">
-            <ul class="space-y-2 p-4">
-                <li><a href="/" class="block py-2 px-4 hover:bg-gray-700">Home</a></li>
-                <li><a href="/about" class="block py-2 px-4 hover:bg-gray-700">About</a></li>
-                <li><a href="/contact" class="block py-2 px-4 hover:bg-gray-700">Contact</a></li>
-            </ul>
-        </nav>
-    </aside>
+    {% include "components/sidebar.html" %}
+    <main class="flex-1 p-6 bg-white shadow-md">
+        {% block content %}
+        {% endblock %}
+    </main> 
     {% endblock %}
 </body>
 </html>

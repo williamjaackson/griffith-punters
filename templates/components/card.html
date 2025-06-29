@@ -1,0 +1,8 @@
+{% macro card(title=None, content='') %}
+  <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-4">
+    {% if title %}
+    <h2 class="text-xl font-semibold mb-2">{{ title }}</h2>
+    {% endif %}
+    <p class="text-gray-700">{{ content }}</p>
+</div>
+{% endmacro %}

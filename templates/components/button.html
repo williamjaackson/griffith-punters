@@ -1,0 +1,6 @@
+{% macro button(text, url='#', class='') %}
+  <a href="{{ url }}"
+     class="inline-block px-4 py-2 bg-white rounded border border-gray-200 shadow-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {{ class }}">
+    {{ text }}
+  </a>
+{% endmacro %}
