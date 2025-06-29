@@ -1,0 +1,7 @@
+<p>Logged in as: {{ (user or {}).username }}</p>
+<nav>
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('markets') }}">Prediction Markets</a>
+    <a href="{{ url_for('auth.login') }}">Login</a>
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+</nav>

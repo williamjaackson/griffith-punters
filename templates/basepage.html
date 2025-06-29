@@ -17,6 +17,18 @@
     {% endblock %}
 </head>
 <body>
+    {% include "components/navbar.html" %}
+    <!-- messages (flask.flash) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="flash {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <!-- content -->
     {% block content %}{% endblock %}
 </body>
 </html>
