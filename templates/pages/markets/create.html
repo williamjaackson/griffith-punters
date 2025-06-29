@@ -1,0 +1,16 @@
+{% extends "basepage.html" %}
+
+{% block title %}{{ super() }} - Create Market{% endblock %}
+
+{% block content %}
+<h1>Create Market</h1>
+<form method="POST">
+    <label for="name">Market Name:</label>
+    <input type="text" id="name" name="name" required>
+    <br>
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required></textarea>
+    <br>
+    <button type="submit">Create Market</button>
+</form>
+{% endblock %}

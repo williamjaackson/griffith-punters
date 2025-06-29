@@ -4,20 +4,13 @@ import datetime
 import os
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
+from lib.db import users_collection
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
 
-# Path to the JSON database
-DB_PATH = os.path.join(os.path.dirname(__file__), "../data/users.json")
-
 blueprint = flask.Blueprint("auth", __name__)
 
-users = [
-    {        
-        "username": "admin",
-        "password": generate_password_hash("admin123"),
-    }
-]
+##### ROUTES #####
 
 @blueprint.route("/login", methods=["GET", "POST"])
 def login():
@@ -25,37 +18,39 @@ def login():
         username = flask.request.form.get("username", "")
         password = flask.request.form.get("password", "")
 
-        # Find the user in the database
-        user = next((u for u in users if u["username"] == username), None)
+        # Find the user in the MongoDB collection
+        user = users_collection.find_one({"username": username})
 
         if user and check_password_hash(user["password"], password):
             # Generate JWT token
             token = jwt.encode(
                 {
                     "username": username,
-                    "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+                    "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
                 },
                 JWT_SECRET_KEY,
                 algorithm="HS256",
             )
 
             # Set the JWT token in a cookie
-            response = flask.make_response(flask.redirect(flask.url_for("markets")))
+            response = flask.make_response(flask.redirect(flask.url_for("markets.markets")))
             response.set_cookie("jwt", token, httponly=True, samesite="Strict")
             return response
         else:
-            flask.flash("Invalid username or password", "danger")
+            flask.flash("Invalid username or password (" + generate_password_hash(password) + ")", "danger")
 
     return flask.render_template("pages/auth/login.html")
 
 @blueprint.route("/logout")
 def logout():
     # Clear the JWT token by setting an expired cookie
-    response = flask.make_response(flask.redirect(flask.url_for("markets")))
+    response = flask.make_response(flask.redirect(flask.url_for("markets.markets")))
     response.set_cookie("jwt", "", expires=0, httponly=True, samesite="Strict")
     return response
 
-def jwt_required(func):
+##### DECORATORS #####
+
+def auth_required(func):
     """Decorator to protect routes with JWT authentication."""
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -73,7 +68,20 @@ def jwt_required(func):
         return func(*args, **kwargs)
     return wrapper
 
-def get_current_user():
+def admin_only(func):
+    """Decorator to restrict access to admin users."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user = get_user()
+        if not user or not user.get("admin", False):
+            flask.flash("You do not have permission to access this page.", "danger")
+            return flask.redirect(flask.url_for("markets.markets"))
+        return func(*args, **kwargs)
+    return wrapper
+
+##### HELPER FUNCTIONS #####
+
+def get_user():
     """Retrieve the current user based on the JWT token in cookies."""
     token = flask.request.cookies.get("jwt")
     if not token:
@@ -83,8 +91,8 @@ def get_current_user():
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
         username = payload.get("username")
 
-        # Load users from the JSON database
-        user = next((u for u in users if u["username"] == username), None)
+        # Load user from MongoDB
+        user = users_collection.find_one({"username": username})
         return user
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return None
