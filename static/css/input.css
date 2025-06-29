@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+h1:not([class]) {
+    @apply text-3xl font-extrabold mb-4;
+}
+
+h2:not([class]) {
+    @apply text-2xl font-bold mb-3;
+}

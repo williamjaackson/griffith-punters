@@ -1,0 +1,51 @@
+{% extends "basepage.html" %}
+
+{% block title %}
+    {{ super() }}  Resolve {{ market.title }}
+{% endblock %}
+
+{% block content %}
+    <div class="max-w-xl mx-auto mt-10 bg-white shadow rounded-lg p-8">
+        <h1 class="text-2xl font-bold mb-2">Resolve Market: "{{ market.title }}"</h1>
+        <p class="mb-4 text-gray-700">{{ market.description }}</p>
+        <hr class="mb-6">
+
+        {% if market.status == 'resolved' %}
+            <div class="bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3 rounded mb-6">
+                This market was resolved at {{ market.resolved_at }}.<br>
+                Winning outcome: <strong>{{ market.winningOutcome }}</strong>
+            </div>
+            <p>
+                <a href="{{ url_for('markets.market', market_id=market._id) }}"
+                     class="inline-block text-blue-600 hover:underline">Back to market</a>
+            </p>
+        {% else %}
+            <form method="POST"
+                        action="{{ url_for('markets.resolve_market', market_id=market._id) }}"
+                        class="space-y-6">
+                <div>
+                    <label for="winning_outcome" class="block text-sm font-medium text-gray-700 mb-1">
+                        Select winning outcome:
+                    </label>
+                    <select name="winning_outcome" id="winning_outcome" required
+                                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="" disabled selected>-- choose one --</option>
+                        {% for oid in market.outcomes.keys() %}
+                            <option value="{{ oid }}">{{ oid }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button type="submit"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        Resolve Market
+                    </button>
+                    <a href="{{ url_for('markets.market', market_id=market._id) }}"
+                       class="text-gray-600 hover:underline">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+{% endblock %}

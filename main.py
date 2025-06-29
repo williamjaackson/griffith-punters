@@ -23,5 +23,9 @@ load_blueprint(users.blueprint)
 def index():
     return flask.redirect(flask.url_for('markets.markets'))
 
+@app.route('/about')
+def about():
+    return flask.render_template('pages/about.html')
+
 if __name__ == "__main__":
     app.run(debug=True)

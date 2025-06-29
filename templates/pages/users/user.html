@@ -3,24 +3,261 @@
 {% block title %}{{ super() }} - User {{ user.username }}{% endblock %}
 
 {% block content %}
-<h1>{{ user.username }}</h1>
-<p>{{ user._id }}</p>
-<!-- <hr>
-<p>Positions Value: #####</p>
-<p>Profit/Loss: #####</p>
-<p>Volume Traded: #####</p> -->
-<hr>
-<p>Account Balance: ${{ user.balance }}</p>
-<br>
-<p>Account Created: {{ user.created_at }}</p>
-<p>Last Login: {{ user.last_login }}</p>
-<hr>
-<h2>Recent Trades</h2>
-<ul>
-    {% for trade in user.trades %}
-        <li>{{ trade.market }} - {{ trade.amount }} at {{ trade.price }} on {{ trade.timestamp }}</li>
-    {% else %}
-        <li>No trades yet.</li>
-    {% endfor %}
-</ul>
+<div class="mx-auto p-6">
+    <!-- User Header -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div class="flex items-center gap-6">
+            <div class="w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center shadow-sm border border-gray-200">
+                <span class="text-white font-bold text-2xl">{{ user.username.upper()[0:2] }}</span>
+            </div>
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ user.username }}</h1>
+                <div class="flex items-center gap-4 text-gray-600">
+                    <span class="flex items-center gap-2">
+                        <i data-feather="user" class="w-4 h-4"></i>
+                        User ID: {{ user._id }}
+                    </span>
+                    {% if user.admin %}
+                    <span class="px-3 py-1 bg-gradient-to-r from-red-400 to-red-600 text-white text-sm rounded-full font-medium">
+                        Admin
+                    </span>
+                    {% else %}
+                    <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full font-medium">
+                        Student
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Balance Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium uppercase tracking-wide">Account Balance</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">${{ "%.2f"|format(user.balance) }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i data-feather="dollar-sign" class="w-6 h-6 text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Trades Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Trades</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ user_trades|length }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i data-feather="trending-up" class="w-6 h-6 text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Value Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium uppercase tracking-wide">Portfolio Value</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">${{ "%.2f"|format(portfolio_value) }}</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i data-feather="pie-chart" class="w-6 h-6 text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Markets Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium uppercase tracking-wide">Active Markets</p>
+                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ active_markets|length }}</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <i data-feather="shopping-cart" class="w-6 h-6 text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Account Information -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <i data-feather="info" class="w-5 h-5"></i>
+                Account Information
+            </h2>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span class="text-gray-600 font-medium">Account Created</span>
+                    <span class="text-gray-900 font-semibold">
+                        {% if user.created_at %}
+                            {{ moment(user.created_at).format('MMM DD, YYYY') if moment else user.created_at }}
+                        {% else %}
+                            Not available
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span class="text-gray-600 font-medium">Last Login</span>
+                    <span class="text-gray-900 font-semibold">
+                        {% if user.last_login %}
+                            {{ moment(user.last_login).fromNow() if moment else user.last_login }}
+                        {% else %}
+                            Never
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-gray-600 font-medium">Account Status</span>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        Active
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <i data-feather="bar-chart-2" class="w-5 h-5"></i>
+                Trading Summary
+            </h2>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span class="text-gray-600 font-medium">Total Volume Traded</span>
+                    <span class="text-gray-900 font-semibold">${{ "%.2f"|format(total_volume) }}</span>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span class="text-gray-600 font-medium">Average Trade Size</span>
+                    <span class="text-gray-900 font-semibold">
+                        {% if user_trades|length > 0 %}
+                            ${{ "%.2f"|format(total_volume / user_trades|length) }}
+                        {% else %}
+                            $0.00
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-gray-600 font-medium">Markets Participated</span>
+                    <span class="text-gray-900 font-semibold">{{ active_markets|length }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Trading Activity -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i data-feather="activity" class="w-5 h-5"></i>
+            Recent Trading Activity
+        </h2>
+        
+        {% if user_trades %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Market</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Outcome</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Shares</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Cost</th>
+                        <th class="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for trade in user_trades[:10] %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="py-4 px-4">
+                            <a href="{{ url_for('markets.market', market_id=trade.market_id) }}" 
+                               class="text-red-600 hover:text-red-800 font-medium hover:underline">
+                                {{ trade.market_title }}
+                            </a>
+                        </td>
+                        <td class="py-4 px-4">
+                            <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm font-medium">
+                                {{ trade.outcomeId }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-4">
+                            <span class="px-2 py-1 {% if trade.delta > 0 %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} rounded text-sm font-medium">
+                                {% if trade.delta > 0 %}Buy{% else %}Sell{% endif %}
+                            </span>
+                        </td>
+                        <td class="py-4 px-4 font-mono">{{ "%.2f"|format(trade.delta|abs) }}</td>
+                        <td class="py-4 px-4 font-mono">${{ "%.2f"|format(trade.cost) }}</td>
+                        <td class="py-4 px-4 text-gray-600">
+                            {{ moment(trade.timestamp).fromNow() if moment else trade.timestamp }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if user_trades|length > 10 %}
+            <div class="mt-4 text-center">
+                <p class="text-gray-500 text-sm">Showing 10 of {{ user_trades|length }} trades</p>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-feather="trending-up" class="w-8 h-8 text-gray-400"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No trading activity yet</h3>
+            <p class="text-gray-500 mb-6">This user hasn't made any trades yet.</p>
+            <a href="{{ url_for('markets.markets') }}" 
+               class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-lg hover:from-red-500 hover:to-red-700 transition-all duration-200 font-medium">
+                <i data-feather="shopping-cart" class="w-4 h-4"></i>
+                Browse Markets
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Current Holdings (if any) -->
+    {% if holdings %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <i data-feather="briefcase" class="w-5 h-5"></i>
+            Current Holdings
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for market_id, market_holdings in holdings.items() %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h3 class="font-semibold text-gray-900 mb-3">{{ market_holdings.market_title }}</h3>
+                <div class="space-y-2">
+                    {% for outcome, shares in market_holdings.outcomes.items() %}
+                    {% if shares != 0 %}
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-600">{{ outcome }}</span>
+                        <span class="font-mono {% if shares > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ "%.2f"|format(shares) }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Include Feather Icons -->
+<script src="https://unpkg.com/feather-icons"></script>
+<script>
+    feather.replace();
+</script>
 {% endblock %}

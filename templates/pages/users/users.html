@@ -4,40 +4,346 @@
 {% block content %}
   <h1>Leaderboard</h1>
 
-  {% if users %}
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Username</th>
-          <th>Balance</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {# sort by balance descending #}
-        {% for user in users|sort(attribute='balance', reverse=True) %}
-        <tr>
-          <td>
-            {{ loop.index }}
-          </td>
-          <td>
-            {{ user.username }}
-          </td>
-          <td>
-            ${{ "{:,.2f}".format(user.balance) }}
-          </td>
-          <td>
-            <a href="{{ url_for('users.user', user_id=user._id) }}"
-              >
-              View Profile
-            </a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <!-- Leaderboard Tabs -->
+  <div class="mb-6">
+    <nav class="flex space-x-1 bg-gray-100 rounded-lg p-1">
+      <button class="leaderboard-tab active flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors" data-tab="cash">
+        Cash Balance
+      </button>
+      <button class="leaderboard-tab flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors" data-tab="portfolio">
+        Portfolio Value
+      </button>
+      <button class="leaderboard-tab flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors" data-tab="total">
+        Total Value
+      </button>
+      <button class="leaderboard-tab flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors" data-tab="volume">
+        Trading Volume
+      </button>
+    </nav>
+  </div>
+
+  {% if users_with_stats %}
+    <!-- Cash Balance Leaderboard -->
+    <div id="cash-leaderboard" class="leaderboard-content">
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Balance</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for user in users_with_stats|sort(attribute='balance', reverse=True) %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  {% if loop.index == 1 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      🥇 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 2 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      🥈 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 3 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      🥉 #{{ loop.index }}
+                    </span>
+                  {% else %}
+                    <span class="text-sm font-medium text-gray-900">#{{ loop.index }}</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                    <span class="text-white font-bold text-xs">{{ user.username.upper()[0:2] }}</span>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">{{ user.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">${{ "{:,.2f}".format(user.balance) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{{ url_for('users.user', user_id=user._id) }}" class="text-red-600 hover:text-red-900">
+                  View Profile
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Portfolio Value Leaderboard -->
+    <div id="portfolio-leaderboard" class="leaderboard-content hidden">
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Portfolio Value</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active Markets</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for user in users_with_stats|sort(attribute='portfolio_value', reverse=True) %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  {% if loop.index == 1 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      🥇 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 2 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      🥈 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 3 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      🥉 #{{ loop.index }}
+                    </span>
+                  {% else %}
+                    <span class="text-sm font-medium text-gray-900">#{{ loop.index }}</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                    <span class="text-white font-bold text-xs">{{ user.username.upper()[0:2] }}</span>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">{{ user.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">${{ "{:,.2f}".format(user.portfolio_value) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ user.active_markets }} markets
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{{ url_for('users.user', user_id=user._id) }}" class="text-red-600 hover:text-red-900">
+                  View Profile
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Total Value Leaderboard -->
+    <div id="total-leaderboard" class="leaderboard-content hidden">
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Value</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Portfolio</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for user in users_with_stats|sort(attribute='total_value', reverse=True) %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  {% if loop.index == 1 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      🥇 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 2 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      🥈 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 3 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      🥉 #{{ loop.index }}
+                    </span>
+                  {% else %}
+                    <span class="text-sm font-medium text-gray-900">#{{ loop.index }}</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                    <span class="text-white font-bold text-xs">{{ user.username.upper()[0:2] }}</span>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">{{ user.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">${{ "{:,.2f}".format(user.total_value) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-500">${{ "{:,.2f}".format(user.balance) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-500">${{ "{:,.2f}".format(user.portfolio_value) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{{ url_for('users.user', user_id=user._id) }}" class="text-red-600 hover:text-red-900">
+                  View Profile
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Trading Volume Leaderboard -->
+    <div id="volume-leaderboard" class="leaderboard-content hidden">
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trading Volume</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Trades</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for user in users_with_stats|sort(attribute='trading_volume', reverse=True) %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  {% if loop.index == 1 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      🥇 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 2 %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      🥈 #{{ loop.index }}
+                    </span>
+                  {% elif loop.index == 3 %}
+                    <span class="inline-flex items-components px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      🥉 #{{ loop.index }}
+                    </span>
+                  {% else %}
+                    <span class="text-sm font-medium text-gray-900">#{{ loop.index }}</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                    <span class="text-white font-bold text-xs">{{ user.username.upper()[0:2] }}</span>
+                  </div>
+                  <div class="ml-3">
+                    <div class="text-sm font-medium text-gray-900">{{ user.username }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">${{ "{:,.2f}".format(user.trading_volume) }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {{ user.total_trades }} trades
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{{ url_for('users.user', user_id=user._id) }}" class="text-red-600 hover:text-red-900">
+                  View Profile
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   {% else %}
-    <p>No users to display.</p>
+    <div class="text-center py-12">
+      <div class="mx-auto max-w-md">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by registering for an account.</p>
+      </div>
+    </div>
   {% endif %}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.leaderboard-tab');
+      const contents = document.querySelectorAll('.leaderboard-content');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          const targetTab = this.dataset.tab;
+
+          // Remove active class from all tabs
+          tabs.forEach(t => {
+            t.classList.remove('active', 'bg-white', 'text-gray-900', 'shadow-sm');
+            t.classList.add('text-gray-500', 'hover:text-gray-700');
+          });
+
+          // Add active class to clicked tab
+          this.classList.add('active', 'bg-white', 'text-gray-900', 'shadow-sm');
+          this.classList.remove('text-gray-500', 'hover:text-gray-700');
+
+          // Hide all content divs
+          contents.forEach(content => {
+            content.classList.add('hidden');
+          });
+
+          // Show target content
+          const targetContent = document.getElementById(targetTab + '-leaderboard');
+          if (targetContent) {
+            targetContent.classList.remove('hidden');
+          }
+        });
+      });
+
+      // Initialize first tab as active
+      if (tabs.length > 0) {
+        tabs[0].classList.add('active', 'bg-white', 'text-gray-900', 'shadow-sm');
+        tabs[0].classList.remove('text-gray-500', 'hover:text-gray-700');
+      }
+    });
+  </script>
+
+  <style>
+    .leaderboard-tab.active {
+      background-color: white;
+      color: rgb(17, 24, 39);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    
+    .leaderboard-tab:not(.active) {
+      color: rgb(107, 114, 128);
+    }
+    
+    .leaderboard-tab:not(.active):hover {
+      color: rgb(55, 65, 81);
+    }
+  </style>
 {% endblock %}

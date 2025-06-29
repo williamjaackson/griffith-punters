@@ -1,0 +1,41 @@
+{% extends "basepage.html" %}
+{% import "components/button.html" as button %}
+
+{% block title %}{{ super() }} - About{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center">
+        <i data-feather="book" class="w-6 h-6 mr-2 stroke-3"></i>
+        <h1 class="m-0 text-3xl font-extrabold">About</h1>
+    </div>
+    <p>
+        Built for the 2025 Griffith Innovation Challenge (GIC) Hackathon, Griffith Punters Club is a playful yet powerful platform designed specifically to foster deeper engagement between students and the life of their university. At its core, the application transforms campus affairs—everything from club election outcomes to sporting results, guest lecture attendance, even debates over where the next food truck should park—into real‐money‐free prediction markets. By tapping into the natural human drive for competition and the thrill of “having skin in the game,” we harness gamification to encourage students to stay informed, connected, and motivated.
+
+Why “Academic Assistance”? On the surface, prediction markets might look like pure entertainment—but the Griffith Punters Club is anything but a diversion. Instead, it operates as a continuous, student‐driven newsfeed of campus happenings. When a market opens predicting the turnout for the next career fair, students need to research which companies are recruiting, what timeslots are busiest, and which workshops are likely to attract the largest audiences. When another market launches around the probability of passing a difficult exam on first attempt, students must reflect on syllabus difficulty, past cohorts’ performance, and current study group strategies. In every instance, deciding how to “bet” requires learners to actively gather information, share insights, and debate assumptions.
+
+This continuous cycle of hypothesis, information‐seeking, and collective forecasting delivers multiple layers of academic assistance:
+
+1. Motivation to Learn:  
+   Students are notoriously busy. Lectures, labs, assignments, social commitments, part‐time jobs—everything competes for attention. A prediction market that rewards thoughtful participation with leaderboard prestige and virtual currency injects an element of fun into what might otherwise be routine or overlooked announcements. When there’s “credit” to be earned by accurately forecasting the guest speaker’s turnout or the winning side in a policy debate, students who might have skipped the flyer or ignored the email find themselves clicking through, reading the event description, and even RSVPing to the actual event.
+
+2. Peer‐to‐Peer Teaching:  
+   Every time someone places a trade, they implicitly broadcast their reasoning to the crowd. In the process, they educate others: “I’m buying shares of ‘Guest Lecture attendance above 200’ because the speaker is X, whose last talk drew a full house.” This creates a dynamic, decentralized form of peer teaching—where the market price itself signals community confidence, and chat threads or comment fields attached to each market become mini‐forums for sharing tips, resources, or relevant statistics. It’s like micro–study groups sprouting around every campus occurrence.
+
+3. Data‐Driven Reflection:  
+   Once a market resolves, the final outcome and trading history provide immediate feedback loops. If a market on “average assignment grade” resolves lower than most predicted, students and instructors alike can reflect on why: Was the assessment tougher than advertised? Did study materials miss the mark? These insights can then inform future study strategies or even curriculum adjustments. The platform doesn’t just keep students informed—it equips them to critically interpret real campus data.
+
+4. Community Building:  
+   By creating a shared space for prediction, debate, and outcome analysis, Griffith Punters Club knits together students from different faculties who otherwise might never interact. An arts major might predict the turnout for the engineering society’s hackathon; a science student might hedge on the result of a political science forum. Every market becomes an interdisciplinary conversation starter, breaking down silos and reinforcing the idea that university life is a collective endeavor.
+
+5. Incentivizing Academic Excellence:  
+   Perhaps most importantly, the platform taps into students’ innate desire to excel. Whether “winning” means climbing the weekly leaderboard, earning virtual tokens to redeem for campus perks (coffee vouchers, printing credits, or priority seating at events), or simply bragging rights among friends, the drive to forecast accurately translates directly into deeper research, more active class participation, and a keener awareness of campus resources and opportunities. In short, by rewarding intellectual curiosity and timely engagement, students want to “try harder” in every domain—academic, social, and extracurricular.
+
+Built during the 2025 GIC Hackathon, our prototype demonstrates how technology can reframe academic assistance from passive resource delivery (e.g., lecture recordings, Q&A forums) into an active, game‐theoretic experience that aligns perfectly with student motivations. Judges and participants alike noted how seamlessly we wove together real‐time data, user‐generated markets, and social features—showcasing not only technical prowess, but also a deep understanding of student psychology and campus culture.
+
+Looking ahead, the Griffith Punters Club can integrate with university LMS systems to auto‐generate markets from upcoming assignment deadlines, guest lectures, or even library footfall statistics. We can partner with student services to reward predictive accuracy with tangible academic benefits—priority advising appointments, mentorship sessions, or exclusive workshops. And by maintaining a transparent, open‐source codebase, we invite other universities around Australia (and beyond) to adopt and customize the platform, creating a federated network of student prediction markets that collectively elevate academic engagement on every campus.
+
+In sum, Griffith Punters Club exemplifies Academic Assistance not by offering more study guides or flashcards, but by turning campus life itself into a continuing, amenable classroom—one where every prediction is a prompt to learn, discuss, and connect. It meets the GIC 2025 theme head‐on, delivering a solution that motivates students to stay curious, collaborate across disciplines, and push themselves to understand and influence the university environment in real time.
+    </p>
+</div>
+{% endblock %}

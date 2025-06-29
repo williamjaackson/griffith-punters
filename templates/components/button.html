@@ -1,0 +1,8 @@
+{% macro button(text, url, class='', icon='') %}
+    <a href="{{ url }}" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors border border-gray-300 shadow-sm">
+        {% if icon %}
+            <i data-feather="{{ icon }}"></i>
+        {% endif %}
+        <span class="font-medium">{{ text }}</span>
+    </a>
+{% endmacro %}

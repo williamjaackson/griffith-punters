@@ -5,30 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Griffith Punters Club{% endblock %}</title>
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
     {% block scripts %}
-    <!-- <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script>
         // Activate Feather Icons
         document.addEventListener("DOMContentLoaded", function() {
             feather.replace();
         });
-    </script> -->
+    </script>
     {% endblock %}
 </head>
-<body>
+<body class="bg-slate-100">
     {% include "components/navbar.html" %}
     <!-- messages (flask.flash) -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
+    {% if messages %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
                 {% for category, message in messages %}
-                    <li class="flash {{ category }}">{{ message }}</li>
+                    showToast('{{ category }}', {{ message|tojson }});
                 {% endfor %}
-            </ul>
-        {% endif %}
+            });
+        </script>
+    {% endif %}
     {% endwith %}
-    <!-- content -->
-    {% block content %}{% endblock %}
+    <main class="ml-64 mr-2">
+        <div class="bg-white my-2 rounded-lg shadow-md p-6 h-full">
+            {% block content %}{% endblock %}
+        </div>
+        <footer class="text-slate-600 text-center mt-4">
+            <p>&copy; 2025 Griffith Punters Club</p>
+        </footer>
+    </main>
+    <div id="toast-container" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none">
+    </div>
+    <style>
+    @keyframes slideInUp {
+        from {
+            transform: translate(-50%, 100%);
+            opacity: 0;
+        }
+        to {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutDown {
+        from {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+        to {
+            transform: translate(-50%, 100%);
+            opacity: 0;
+        }
+    }
+    
+    @keyframes progressBar {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+    
+    .toast-enter {
+        animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    .toast-exit {
+        animation: slideOutDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    .progress-bar {
+        animation: progressBar 5s linear forwards;
+    }
+</style>
+
+<!-- Toast JavaScript (add to your base template) -->
+<script>
+    let toastId = 0;
+    const activeToasts = new Set();
+
+    const toastConfig = {
+        success: {
+            icon: 'check-circle',
+            bgClass: 'bg-gradient-to-r from-green-500 to-emerald-600',
+            borderClass: 'border-green-400',
+            textClass: 'text-white',
+            iconClass: 'text-green-200'
+        },
+        danger: { // Flask uses 'danger' instead of 'error'
+            icon: 'x-circle',
+            bgClass: 'bg-gradient-to-r from-red-500 to-rose-600',
+            borderClass: 'border-red-400',
+            textClass: 'text-white',
+            iconClass: 'text-red-200'
+        },
+        error: { // Support both 'error' and 'danger'
+            icon: 'x-circle',
+            bgClass: 'bg-gradient-to-r from-red-500 to-rose-600',
+            borderClass: 'border-red-400',
+            textClass: 'text-white',
+            iconClass: 'text-red-200'
+        },
+        warning: {
+            icon: 'alert-triangle',
+            bgClass: 'bg-gradient-to-r from-yellow-500 to-amber-600',
+            borderClass: 'border-yellow-400',
+            textClass: 'text-white',
+            iconClass: 'text-yellow-200'
+        },
+        info: {
+            icon: 'info',
+            bgClass: 'bg-gradient-to-r from-blue-500 to-indigo-600',
+            borderClass: 'border-blue-400',
+            textClass: 'text-white',
+            iconClass: 'text-blue-200'
+        }
+    };
+
+    function showToast(type, message, duration = 5000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        
+        const id = ++toastId;
+        const config = toastConfig[type] || toastConfig.info;
+        
+        const toast = document.createElement('div');
+        toast.id = `toast-${id}`;
+        toast.className = `
+            relative mb-3 p-4 rounded-xl shadow-lg border backdrop-blur-sm
+            ${config.bgClass} ${config.borderClass} ${config.textClass}
+            pointer-events-auto cursor-pointer
+            transform transition-all duration-300 hover:scale-105
+        `;
+        
+        toast.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <i data-feather="${config.icon}" class="w-5 h-5 ${config.iconClass}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium leading-5">${message}</p>
+                </div>
+                <button onclick="dismissToast(${id})" class="flex-shrink-0 ml-2 opacity-70 hover:opacity-100 transition-opacity">
+                    <i data-feather="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="absolute bottom-0 left-0 h-1 bg-white bg-opacity-30 rounded-b-xl progress-bar"></div>
+        `;
+        
+        toast.classList.add('toast-enter');
+        container.appendChild(toast);
+        activeToasts.add(id);
+        
+        // Initialize feather icons if available
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+        
+        // Auto dismiss
+        setTimeout(() => dismissToast(id), duration);
+        
+        // Click to dismiss
+        toast.addEventListener('click', () => dismissToast(id));
+    }
+
+    function dismissToast(id) {
+        if (!activeToasts.has(id)) return;
+        
+        const toast = document.getElementById(`toast-${id}`);
+        if (!toast) return;
+        
+        activeToasts.delete(id);
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }
+</script>
 </body>
 </html>

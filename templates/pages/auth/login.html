@@ -1,16 +1,27 @@
 {% extends "basepage.html" %}
+{% import "components/button.html" as button %}
 
 {% block title %}{{ super() }} - Login{% endblock %}
 
 {% block content %}
-<h1>Login</h1>
-<form method="POST">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required>
-    <br>
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required>
-    <br>
-    <button type="submit">Login</button>
+<div class="flex items-center">
+    <i data-feather="log-in" class="w-6 h-6 mr-2 stroke-3"></i>
+    <h1 class="m-0 text-3xl font-extrabold">Login</h1>
+</div>
+<p class="text-gray-600 mt-2">Don't have an account? <a href="{{ url_for('auth.register') }}" class="text-blue-500 hover:underline">Register here</a>.</p>
+
+<form method="POST" class="mt-4 max-w-2xl flex flex-col gap-2">
+    <div class="flex flex-col">
+        <label for="username" class="uppercase text-gray-500 text-sm font-bold">Username</label>
+        <input type="text" id="username" name="username" required class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+    <div class="flex flex-col">
+        <label for="password" class="uppercase text-gray-500 text-sm font-bold">Password</label>
+        <input type="password" id="password" name="password" required class="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+    
+    <button type="submit">
+        {{ button.button("Login", url='#', class='bg-blue-400 hover:bg-blue-600 w-full') }}
+    </button>
 </form>
 {% endblock %}

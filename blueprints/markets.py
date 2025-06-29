@@ -112,22 +112,38 @@ def trade(market_id):
 
 @blueprint.route('/')
 def markets():
-  market_list = list(markets_collection.find({}))
-  for m in market_list:
-    prices = compute_new_prices(m['outcomes'], m['liquidityParameter'])
-    top_outcome, top_prob = max(prices.items(), key=lambda kv: kv[1])
-    m['topOutcome'] = top_outcome
-    m['topProbability'] = top_prob
-  return flask.render_template(
-    'pages/markets/markets.html', markets=market_list
-  )
+    # Open markets: either no status field or status != 'resolved'
+    open_markets = list(markets_collection.find({
+        "$or": [
+            {"status": {"$exists": False}},
+            {"status": {"$ne": "resolved"}}
+        ]
+    }))
+    # Resolved markets
+    resolved_markets = list(markets_collection.find({
+        "status": "resolved"
+    }))
+
+    # decorate each with topOutcome / topProbability
+    def decorate(markets):
+        for m in markets:
+            prices = compute_new_prices(m['outcomes'], m['liquidityParameter'])
+            top_outcome, top_prob = max(prices.items(), key=lambda kv: kv[1])
+            m['topOutcome'] = top_outcome
+            m['topProbability'] = top_prob
+    decorate(open_markets)
+    decorate(resolved_markets)
+
+    return flask.render_template(
+        'pages/markets/markets.html',
+        open_markets=open_markets,
+        resolved_markets=resolved_markets
+    )
 
 @blueprint.route('/<market_id>')
-@auth_required
 def market(market_id):
     m = markets_collection.find_one({"_id": market_id})
-    if not m:
-        return flask.abort(404)
+    if not m: return flask.abort(404)
 
     b = m['liquidityParameter']
     # current prices
@@ -207,3 +223,62 @@ def create():
     return flask.redirect(flask.url_for('markets.markets'))
 
   return flask.render_template('pages/markets/create.html')
+
+@blueprint.route('/<market_id>/resolve', methods=['GET','POST'])
+@admin_only
+def resolve_market(market_id):
+    m = markets_collection.find_one({"_id": market_id})
+    if not m:
+        flask.flash('Market not found.', 'danger')
+        return flask.redirect(flask.url_for('markets.markets'))
+
+    # if already resolved, redirect back
+    if m.get('status') == 'resolved':
+        flask.flash('Market already resolved.', 'warning')
+        return flask.redirect(
+            flask.url_for('markets.market', market_id=market_id)
+        )
+
+    if flask.request.method == 'POST':
+        winner = flask.request.form.get('winning_outcome')
+        if winner not in m['outcomes']:
+            flask.flash('Invalid outcome selected.', 'danger')
+            return flask.redirect(
+                flask.url_for('markets.resolve_market', market_id=market_id)
+            )
+
+        # compute user payouts: $1 per share held in winner
+        # first, compute net holdings per user:
+        holdings = {}
+        for o in m.get('orders', []):
+            uid = o['userId']
+            if o['outcomeId'] == winner:
+                holdings[uid] = holdings.get(uid, 0.0) + o['delta']
+
+        # credit each user their payout
+        for uid, qty in holdings.items():
+            if qty > 0:
+                users_collection.update_one(
+                    {"_id": uid},
+                    {"$inc": {"balance": qty}}
+                )
+
+        # mark market resolved
+        markets_collection.update_one(
+            {"_id": market_id},
+            {"$set": {
+                "status": "resolved",
+                "winningOutcome": winner,
+                "resolved_at": datetime.datetime.utcnow()
+            }}
+        )
+        flask.flash(f'Market resolved: "{winner}" wins.', 'success')
+        return flask.redirect(
+            flask.url_for('markets.market', market_id=market_id)
+        )
+
+    # GET: render form
+    return flask.render_template(
+        'pages/markets/resolve.html',
+        market=m
+    )
