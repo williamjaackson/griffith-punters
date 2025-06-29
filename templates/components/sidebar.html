@@ -1,15 +1,42 @@
-{% import "components/button.html" as ui %}
-
-<aside class="flex-shrink-0 h-full">
-    <nav class="bg-slate-100 h-full w-64">
-        <div class="p-4">
-            <h2 class="text-xl font-semibold">Navigation</h2>
-            <p class="text-gray-600">Choose a page to navigate</p>
+<aside class="fixed top-0 left-0 h-full w-64 flex flex-col p-2">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const url = window.location.pathname;
+            const links = document.querySelectorAll('a');
+            links.forEach(link => {
+                if (link.getAttribute('href') === url) {
+                    link.classList.add('bg-gradient-to-br', 'from-red-400', 'to-red-600', 'text-white');
+                }
+            });
+        });
+    </script>    
+    <div class="h-full bg-white p-4 rounded-lg shadow-md">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span class="text-white font-bold text-lg">GP</span>
+            </div>
+            <div class="flex flex-col">
+                <h1 class="text-xl font-bold text-gray-900 leading-tight">Griffith Punters</h1>
+                <p class="text-gray-500 text-sm leading-tight">Gamble on Uni Life</p>
+            </div>
         </div>
-        <ul class="space-y-2 p-4">
-            <li><a href="{{ url }}" class="inline-block px-4 py-2 bg-white rounded border border-gray-200 shadow-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full">Home</a></li>
-            <li><a href="{{ url }}" class="inline-block px-4 py-2 bg-white rounded border border-gray-200 shadow-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full">About</a></li>
-            <li><a href="{{ url }}" class="inline-block px-4 py-2 bg-white rounded border border-gray-200 shadow-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full">Other</a></li>
-        </ul>
-    </nav>
+        <!-- <hr class="border-gray-200 my-4"> -->
+        <div class="flex flex-col gap-2 mt-8">
+            <!-- <p class="text-gray-600 text-xs uppercase font-bold">Navigation</p> -->
+            <nav class="flex flex-col gap-2">
+                <a href="/" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i data-feather="home" class="w-5 h-5"></i>
+                    <span class="font-medium">Home</span>
+                </a>
+                <a href="/about" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i data-feather="plus-circle" class="w-5 h-5"></i>
+                    <span class="font-medium">Create Market</span>
+                </a>
+                <a href="/view" class="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i data-feather="list" class="w-5 h-5"></i>
+                    <span class="font-medium">View Markets</span>
+                </a>
+            </nav>
+        </div>
+    </div>
 </aside>
