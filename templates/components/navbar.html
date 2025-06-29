@@ -1,12 +1,15 @@
 <p>
     Logged in as: 
-    <a href="{{ url_for('users.user', user=(account or {}).get('_id')) }}">
-        {{ (account or {}).username }}
+    {% if account %}
+    <a href="{{ url_for('users.user', user_id=account.get('_id')) }}">
+        {{ account.username }}
     </a>
+    {% else %}
+    <span>[none]</span>
+    {% endif %}
 </p>
 <nav>
-    <a href="{{ url_for('index') }}">Home</a>
-    <a href="{{ url_for('markets.markets') }}">Prediction Markets</a>
+    <a href="{{ url_for('markets.markets') }}">Markets</a>
     <a href="{{ url_for('auth.login') }}">Login</a>
     <a href="{{ url_for('auth.logout') }}">Logout</a>
     <a href="{{ url_for('users.users') }}">Users</a>

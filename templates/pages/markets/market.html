@@ -1,17 +1,230 @@
 {% extends "basepage.html" %}
-
-{% block title %}{{ super() }} - Market {{ market.name }}{% endblock %}
+{% block title %}{{ super() }} - Market {{ market.title }}{% endblock %}
 
 {% block content %}
-<h1>{{ market.name }}</h1>
-{{ market.description }}
+  <h1>{{ market.title }}</h1>
+  <p>{{ market.description }}</p>
+  <hr>
 
-<h2>Recent Trades</h2>
-<ul>
-    {% for trade in market.trades %}
-        <li>{{ trade.user }} traded {{ trade.amount }} at {{ trade.price }} on {{ trade.timestamp }}</li>
+  <h2>Market Details</h2>
+  <p><strong>Liquidity (b):</strong> {{ market.liquidityParameter }}</p>
+  <p><strong>Market maker max loss:</strong>
+     ${{ "%.2f"|format(max_loss) }}
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Outcome</th>
+        <th>Shares (q)</th>
+        <th>Probability</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for outcome_id, share_count in market.outcomes.items() %}
+        <tr>
+          <td>{{ outcome_id }}</td>
+          <td>{{ "%.2f"|format(share_count) }}</td>
+          <td>{{ "%.2f"|format(prices[outcome_id] * 100) }}%</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">No outcomes available.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr>
+  
+    <h2>Trade Market</h2>
+  {% if market.status != 'resolved' %}
+  <form method="POST" action="{{ url_for('markets.trade', market_id=market._id) }}">
+    <div>
+      <label for="side">Side:</label>
+      <select name="side" id="side">
+          <option value="buy">Buy</option>
+          <option value="sell">Sell</option>
+      </select>
+    </div>
+    <div>
+      <label for="outcome">Outcome:</label>
+      <select name="outcome" id="outcome">
+          {% for oid in market.outcomes.keys() %}
+          <option value="{{ oid }}">{{ oid }}</option>
+          {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="amount">Amount:</label>
+      <div style="display:inline-flex; align-items:center;">
+        <input
+          type="number"
+          name="amount"
+          id="amount"
+          required
+          min="0.01"
+          step="0.01"
+          style="width:6em;"
+        />
+        <button
+          type="button"
+          id="max-btn"
+          style="margin-left:0.5em;"
+        >
+          Max
+        </button>
+      </div>
+      <small class="text-gray-600">
+        <span id="amount-unit">USD</span>
+      </small>
+    </div>
+    <button type="submit">Submit</button>
+  </form>  <script>
+    // optional: toggle unit label
+    document.getElementById('side').addEventListener('change', e => {
+      document.getElementById('amount-unit').textContent =
+      e.target.value === 'buy' ? 'USD' : 'shares';
+    });
+  </script>
+{% else %}
+<p>This market is resolved.</p>
+{% endif %}
+
+  <hr>
+  <h2>Your Holdings</h2>
+  <table>
+    <thead>
+      <tr><th>Outcome</th><th>Shares Held</th><th>Value (USD)</th></tr>
+    </thead>
+    <tbody>
+      {% for oid, qty in holdings.items() %}
+        <tr>
+          <td>{{ oid }}</td>
+          <td>{{ "%.2f"|format(qty) }}</td>
+          <td>{{ "%.2f"|format(qty * prices[oid]) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr>
+  <h2>Recent Trades</h2>
+  <ul>
+    {% for order in market.orders|sort(attribute='timestamp', reverse=True) %}
+      <li>
+        {{ order.userId }} bought
+        {{ "%.2f"|format(order.delta) }} shares of
+        {{ order.outcomeId }} for
+        ${{ "%.2f"|format(order.cost) }}
+        at {{ order.timestamp }}
+      </li>
     {% else %}
-        <li>No trades yet.</li>
+      <li>No trades yet.</li>
     {% endfor %}
-</ul>
+  </ul>
+
+  <hr>
+  <h2>Price History</h2>
+  <canvas id="priceChart" width="600" height="300"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    (function(){
+      let history = JSON.parse('{{ price_history|tojson }}'); 
+      if (!history.length) {
+        document.getElementById('priceChart')
+                .insertAdjacentHTML('afterend',
+                                   '<p>No trades yet.</p>');
+        return;
+      }
+
+      const labels = history.map(h =>
+        new Date(h.t).toLocaleString()
+      );
+      const outcomes = Object.keys(history[0].prices);
+      const datasets = outcomes.map((o, i) => ({
+        label: o,
+        data: history.map(h => h.prices[o] * 100),
+        borderColor: `hsl(${i * 360/outcomes.length}, 70%, 50%)`,
+        fill: false,
+        tension: 0.1
+      }));
+
+      const ctx = document.getElementById('priceChart')
+                        .getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          scales: {
+            y: {
+              title: { display: true, text: 'Probability (%)' },
+              min: 0, max: 100
+            },
+            x: {
+              title: { display: true, text: 'Time' }
+            }
+          },
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            tooltip: { callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%`
+            } }
+          }
+        }
+      });
+    })();
+
+    (function(){
+      // Elements
+      const sideEl = document.getElementById('side');
+      const outcomeEl = document.getElementById('outcome');
+      const amountEl = document.getElementById('amount');
+      const unitEl = document.getElementById('amount-unit');
+      const maxBtn = document.getElementById('max-btn');
+
+      // Injected from Flask as strings
+      // balance comes from view context (as a number-string)
+      const balance = parseFloat('{{ account.balance }}') || 0.0;
+      // holdings comes in as JSON text
+      const holdings = JSON.parse('{{ holdings|tojson }}');
+
+      // Helper: floor to 2 decimals
+      function floor2(x) {
+        return Math.floor(x * 100) / 100;
+      }
+
+      // Update the "USD" / "shares" label
+      function updateUnitLabel(){
+        unitEl.textContent = sideEl.value === 'buy' ? 'USD' : 'shares';
+      }
+
+      // When user flips buy/sell
+      sideEl.addEventListener('change', () => {
+        updateUnitLabel();
+        amountEl.value = '';
+      });
+
+      // If they pick a different outcome
+      outcomeEl.addEventListener('change', () => {
+        amountEl.value = '';
+      });
+
+      // Max button logic
+      maxBtn.addEventListener('click', () => {
+        if (sideEl.value === 'buy') {
+          // Spend entire balance, floored at 2 decimals
+          const v = floor2(balance);
+          amountEl.value = v.toFixed(2);
+        } else {
+          // Sell all shares for this outcome, floored at 2 decimals
+          const o = outcomeEl.value;
+          const qty = holdings[o] || 0;
+          const v = floor2(qty);
+          amountEl.value = v.toFixed(2);
+        }
+      });
+
+      // Initialize on load
+      updateUnitLabel();
+    })();
+  </script>
 {% endblock %}

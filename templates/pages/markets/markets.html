@@ -2,16 +2,31 @@
 {% block title %}{{ super() }} - Markets{% endblock %}
 
 {% block content %}
-<h1>Markets</h1>
-{% for market in markets %}
-<div class="bg-white shadow-md rounded-lg p-6 mb-4">
-    <h2 class="text-xl font-semibold mb-2">{{ market.name }}</h2>
-    <p class="text-gray-600 mb-4">{{ market.description }}</p>
-    <a href="{{ url_for('markets.market', market=market._id) }}" class="text-blue-500 hover:underline">View Details</a>
-</div>
-{% endfor %}
-{% if account.admin %}
-<br>
-<a href="{{ url_for('markets.create') }}">Create Market</a>
-{% endif %}
+  <h1>Markets</h1>
+
+  {% for market in markets %}
+    <div class="bg-white shadow-md rounded-lg p-6 mb-4">
+      <h2 class="text-xl font-semibold mb-2">{{ market.title }}</h2>
+      <p class="text-gray-600 mb-2">{{ market.description }}</p>
+
+      <p>
+        <strong>Favorite:</strong>
+        {{ market.topOutcome }}
+        at {{ "%.2f"|format(market.topProbability * 100) }}%
+      </p>
+
+      <a href="{{ url_for('markets.market', market_id=market._id) }}"
+         class="text-blue-500 hover:underline">
+        View Details
+      </a>
+    </div>
+    <hr>
+  {% else %}
+    <p>No markets to show.</p>
+  {% endfor %}
+
+  {% if account.admin %}
+    <br>
+    <a href="{{ url_for('markets.create') }}">Create Market</a>
+  {% endif %}
 {% endblock %}

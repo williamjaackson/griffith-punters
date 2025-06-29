@@ -9,10 +9,10 @@ from lib.db import markets_collection
 
 app = flask.Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "")
-app.context_processor(lambda: {"account": auth.get_user()})
+app.context_processor(lambda: {"account": auth.get_account()})
 
 def load_blueprint(blueprint):
-    blueprint.context_processor(lambda: {"account": auth.get_user()})
+    blueprint.context_processor(lambda: {"account": auth.get_account()})
     app.register_blueprint(blueprint)
 
 load_blueprint(auth.blueprint)

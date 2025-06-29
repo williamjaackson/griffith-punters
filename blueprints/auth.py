@@ -25,7 +25,7 @@ def login():
             # Generate JWT token
             token = jwt.encode(
                 {
-                    "username": username,
+                    "_id": user["_id"],
                     "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
                 },
                 JWT_SECRET_KEY,
@@ -56,6 +56,7 @@ def auth_required(func):
     def wrapper(*args, **kwargs):
         token = flask.request.cookies.get("jwt")
         if not token:
+            flask.flash("You must be logged in to access this page.", "danger")
             return flask.redirect(flask.url_for("auth.login"))
         try:
             jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
@@ -72,7 +73,7 @@ def admin_only(func):
     """Decorator to restrict access to admin users."""
     @wraps(func)
     def wrapper(*args, **kwargs):
-        user = get_user()
+        user = get_account()
         if not user or not user.get("admin", False):
             flask.flash("You do not have permission to access this page.", "danger")
             return flask.redirect(flask.url_for("markets.markets"))
@@ -81,7 +82,7 @@ def admin_only(func):
 
 ##### HELPER FUNCTIONS #####
 
-def get_user():
+def get_account():
     """Retrieve the current user based on the JWT token in cookies."""
     token = flask.request.cookies.get("jwt")
     if not token:
@@ -89,10 +90,10 @@ def get_user():
     try:
         # Decode the JWT token
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
-        username = payload.get("username")
+        user_id = payload.get("_id")
 
         # Load user from MongoDB
-        user = users_collection.find_one({"username": username})
+        user = users_collection.find_one({"_id": user_id})
         return user
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return None

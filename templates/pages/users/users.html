@@ -1,12 +1,43 @@
 {% extends "basepage.html" %}
-{% block title %}{{ super() }} - Users{% endblock %}
+{% block title %}{{ super() }} - Leaderboard{% endblock %}
 
 {% block content %}
-<h1>Users</h1>
-{% for user in users %}
-<div class="bg-white shadow-md rounded-lg p-6 mb-4">
-    <h2 class="text-xl font-semibold mb-2">{{ user.username }}</h2>
-    <a href="{{ url_for('users.user', user=user._id) }}" class="text-blue-500 hover:underline">View Profile</a>
-</div>
-{% endfor %}
+  <h1 class="text-2xl font-bold mb-6">Leaderboard</h1>
+
+  {% if users %}
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Rank</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Username</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Balance</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {# sort by balance descending #}
+        {% for user in users|sort(attribute='balance', reverse=True) %}
+        <tr class="{{ 'bg-gray-50' if loop.index is odd else '' }}">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ loop.index }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            {{ user.username }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${{ "{:,.2f}".format(user.balance) }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <a href="{{ url_for('users.user', user_id=user._id) }}"
+               class="text-blue-500 hover:underline">
+              View Profile
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-gray-600">No users to display.</p>
+  {% endif %}
 {% endblock %}
