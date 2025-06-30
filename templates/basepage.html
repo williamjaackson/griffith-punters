@@ -16,6 +16,18 @@
         });
     </script>
     {% endblock %}
+
+    <!-- discord embed -->
+    {% block metadata %}
+    <meta property="og:title" content="Griffith Punters">
+    <meta property="og:description" content="Gamble on Uni Life">
+    <meta property="og:url" content="{{ url_for('index') }}">
+    <!-- <meta property="og:type" content="website"> -->
+    <!-- <meta name="twitter:card" content="summary_large_image"> -->
+    <!-- <meta name="twitter:title" content="Griffith Punters Club"> -->
+    <!-- <meta name="twitter:description" content="Join the Griffith Punters Club for the latest tips, discussions, and results on horse racing."> -->
+    <!-- <meta name="twitter:image" content="{{ url_for('static', filename='images/club_logo.png') }}"> -->
+    {% endblock %}
 </head>
 <body class="bg-slate-100">
     {% include "components/navbar.html" %}

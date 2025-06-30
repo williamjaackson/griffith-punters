@@ -1,6 +1,12 @@
 {% extends "basepage.html" %}
 {% block title %}{{ super() }} - Market {{ market.title }}{% endblock %}
 
+{% block metadata %}
+<meta property="og:title" content="Griffith Punters - Market {{ market.title }}">
+<meta property="og:description" content="{{ market.description|truncate(150, True) }}">
+<meta property="og:url" content="{{ url_for('markets.market', market_id=market._id) }}">
+{% endblock %}
+
 {% block content %}
   <!-- Header Section -->
   <div class="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
